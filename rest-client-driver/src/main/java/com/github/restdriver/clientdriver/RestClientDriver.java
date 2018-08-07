@@ -16,18 +16,19 @@
 package com.github.restdriver.clientdriver;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-
 import org.hamcrest.Matcher;
+import com.github.restdriver.clientdriver.capture.BodyCapture;
 
 /**
  * Helper class for fluent creation of Client Driver objects.
  */
 public final class RestClientDriver {
-    
+
     private RestClientDriver() {
     }
-    
+
     /**
      * Creates a new {@link ClientDriverRequest} object.
      * 
@@ -37,7 +38,7 @@ public final class RestClientDriver {
     public static ClientDriverRequest onRequestTo(Matcher<? extends String> path) {
         return new ClientDriverRequest(path);
     }
-    
+
     /**
      * Creates a new {@link ClientDriverRequest} object.
      * 
@@ -47,7 +48,7 @@ public final class RestClientDriver {
     public static ClientDriverRequest onRequestTo(String path) {
         return new ClientDriverRequest(path);
     }
-    
+
     /**
      * Creates a new {@link ClientDriverRequest} object.
      * 
@@ -57,7 +58,7 @@ public final class RestClientDriver {
     public static ClientDriverRequest onRequestTo(Pattern path) {
         return new ClientDriverRequest(path);
     }
-    
+
     /**
      * Creates a new {@link ClientDriverResponse} object.
      * 
@@ -69,7 +70,7 @@ public final class RestClientDriver {
     public static ClientDriverResponse giveResponse(String content) {
         return new ClientDriverResponse(content);
     }
-    
+
     /**
      * Creates a new {@link ClientDriverResponse} object.
      * 
@@ -80,7 +81,7 @@ public final class RestClientDriver {
     public static ClientDriverResponse giveResponse(String content, String contentType) {
         return new ClientDriverResponse(content, contentType);
     }
-    
+
     /**
      * Creates a new {@link ClientDriverResponse} object.
      * 
@@ -91,7 +92,7 @@ public final class RestClientDriver {
     public static ClientDriverResponse giveResponseAsBytes(InputStream content, String contentType) {
         return new ClientDriverResponse(content, contentType);
     }
-    
+
     /**
      * Creates a new {@link ClientDriverResponse} object with no content.
      * 
@@ -100,5 +101,22 @@ public final class RestClientDriver {
     public static ClientDriverResponse giveEmptyResponse() {
         return new ClientDriverResponse();
     }
-    
+
+    /**
+     * Waits for specified time for populated {@link BodyCapture} object.
+     * 
+     * @param bodyCapture
+     * @param time
+     * @param timeUnit
+     * @throws InterruptedException
+     */
+    public static void waitFor(BodyCapture<?> bodyCapture, long time, TimeUnit timeUnit) throws InterruptedException {
+        long waitUntil = System.currentTimeMillis() + timeUnit.toMillis(time);
+        while (waitUntil > System.currentTimeMillis()) {
+            if (bodyCapture.getContent() != null) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+    }
 }
